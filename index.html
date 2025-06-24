@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>RuneScape Wiki Search (RS3)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 1rem;
+    }
+    input, button {
+      font-size: 1rem;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+    }
+    #resultado {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin-top: 1rem;
+      background: #f9f9f9;
+    }
+    a {
+      color: blue;
+    }
+  </style>
+</head>
+<body>
+  <h2>RuneScape Wiki - Buscar Página (RS3)</h2>
+  <input type="text" id="busca" placeholder="Ex: rat" />
+  <button onclick="buscarWiki()">Buscar</button>
+  <div id="resultado">Resultado aparecerá aqui.</div>
+
+  <script>
+    async function buscarWiki() {
+      const termo = document.getElementById('busca').value.trim();
+      const resultado = document.getElementById('resultado');
+
+      if (!termo) {
+        resultado.textContent = 'Por favor, digite um termo de busca.';
+        return;
+      }
+
+      resultado.textContent = 'Carregando...';
+
+      try {
+        // Primeiro: busca no opensearch
+        const searchUrl = `https://runescape.wiki/api.php?action=opensearch&search=${encodeURIComponent(termo)}&format=json&origin=*`;
+        const searchResp = await fetch(searchUrl);
+        const searchData = await searchResp.json();
+
+        if (searchData[1].length === 0) {
+          resultado.textContent = 'Nenhuma página correspondente encontrada.';
+          return;
+        }
+
+        const tituloCorreto = searchData[1][0];
+
+        // Agora: busca o conteúdo desse título
+        const contentUrl = `https://runescape.wiki/api.php?action=query&prop=extracts&titles=${encodeURIComponent(tituloCorreto)}&format=json&origin=*`;
+        const contentResp = await fetch(contentUrl);
+        const contentData = await contentResp.json();
+
+        const page = Object.values(contentData.query.pages)[0];
+
+        resultado.innerHTML = `<h3>${tituloCorreto}</h3>
+          <p>${page.extract || 'Resumo indisponível.'}</p>
+          <p><a href="https://runescape.wiki/w/${encodeURIComponent(tituloCorreto)}" target="_blank">Ver página completa na Wiki</a></p>`;
+
+      } catch (err) {
+        resultado.textContent = 'Erro na requisição: ' + err;
+      }
+    }
+  </script>
+</body>
+</html>
