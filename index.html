@@ -28,7 +28,7 @@
   <h2>RuneScape Wiki - Buscar Página (RS3)</h2>
   <input type="text" id="busca" placeholder="Ex: rat" />
   <button onclick="buscarWiki()">Buscar</button>
-  <div id="resultado">Resultado aparecerá aqui.</div>
+  <div id="resultado"></div>
 
   <script>
     async function buscarWiki() {
@@ -36,14 +36,13 @@
       const resultado = document.getElementById('resultado');
 
       if (!termo) {
-        resultado.textContent = 'Por favor, digite um termo de busca.';
+        resultado.textContent = 'Digite um termo de busca.';
         return;
       }
 
       resultado.textContent = 'Carregando...';
 
       try {
-        // Primeiro: busca no opensearch
         const searchUrl = `https://runescape.wiki/api.php?action=opensearch&search=${encodeURIComponent(termo)}&format=json&origin=*`;
         const searchResp = await fetch(searchUrl);
         const searchData = await searchResp.json();
@@ -55,12 +54,12 @@
 
         const tituloCorreto = searchData[1][0];
 
-        // Agora: busca o conteúdo desse título
         const contentUrl = `https://runescape.wiki/api.php?action=query&prop=extracts&titles=${encodeURIComponent(tituloCorreto)}&format=json&origin=*`;
         const contentResp = await fetch(contentUrl);
         const contentData = await contentResp.json();
 
-        const page = Object.values(contentData.query.pages)[0];
+        const page = Object.values(contentData.query.pages)[0]
+gustavoifpr292;
 
         resultado.innerHTML = `<h3>${tituloCorreto}</h3>
           <p>${page.extract || 'Resumo indisponível.'}</p>
